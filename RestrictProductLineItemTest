@@ -1,0 +1,86 @@
+@isTest(seealldata=true)
+private class RestrictProductLineItemTest {    
+static testMethod void bookingDoubleTest() {    
+    
+    
+    // TO DO: implement unit test                   
+    Date start =System.today()+2;          
+    Date todate=System.today()+10;
+    
+    List<OpportunityLineItem> OpplineItem = new List<OpportunityLineItem>();        
+               
+    test.startTest(); 
+    Account acc = new Account(
+                            Name = 'Test Account',
+                            Phone = '07123123123');
+                            insert acc;       
+   
+    QIC_Centre__c centre = new QIC_Centre__c(
+                            Name = 'New Canberra',
+                            Active__c = True);
+                            insert centre;
+        
+    Opportunity opp = new Opportunity(
+                            Name = 'test',
+                            Billing_Period__c ='Weekly', 
+                            CloseDate = System.today()+5,
+                            StageName = 'Opportunity Detail',
+                            Agency_Commission_Applicable__c = false,
+                            Center__c = centre.id,
+                            PaymentTerms_Approved__c = 'No',
+                            Prod_Discount_Approved__c = 'No',
+                            Accountid = acc.id);
+                            insert opp; 
+                       
+    Product2 prod = new Product2(
+                            Name = 'Test Product',
+                            Type__c = 'Site',
+                            IsActive = true,
+                            Building__c = centre.id,
+                            TDebtor__c = 'Test debtor');
+                            insert prod; 
+    
+    PriceBookEntry pbEntry = new PriceBookEntry(
+                            UnitPrice = 300,
+                            PriceBook2Id = [select id from PriceBook2 where isStandard = true].Id,
+                            Product2Id = prod.Id,
+                            IsActive = true);
+                            insert pbEntry ;
+    
+    OpportunityLineItem oppl =new OpportunityLineItem(
+                            pricebookentryid=pbEntry.Id,
+                            Quantity=1,
+                            OpportunityId=opp.id, unitPrice=1000,
+                            Product_Category__c='Casual Mall Leasing',
+                            StartDate__c=start,
+                            EndDate__c=todate,
+                            Total_Price1__c=150000,
+                            Satus__c = 'On-hold');
+    
+        OpplineItem.add(oppl);
+        insert OpplineItem;
+        
+       try
+     {
+      OpportunityLineItem oppl1 =new OpportunityLineItem(
+                            pricebookentryid=pbEntry.Id,
+                            Quantity=1,
+                            OpportunityId=opp.id, 
+                            unitPrice=1000,
+                            Product_Category__c='Casual Mall Leasing',
+                            StartDate__c=start,
+                            EndDate__c=todate,
+                            Total_Price1__c=150000,
+                            Satus__c = 'Booked');
+        
+        OpplineItem.add(oppl1);
+        insert OpplineItem;
+        System.assert(false, 'Another line has been added - this is invalid');
+     }
+      catch (Exception e)
+     {
+      System.assert(true, 'Another line has not been added - this is correct');
+     }           
+      test.stopTest();                      
+     }            
+}
